@@ -139,9 +139,13 @@ def create_animal(animal):
 
 
 def delete_animal(id):
-    # Initial -1 value for animal index, in case one isn't found
-    animal_index = -1
+    with sqlite3.connect("./kennel.db") as conn:
+        db_cursor = conn.cursor()
 
+        db_cursor.execute("""
+        DELETE FROM animal
+        WHERE id = ?
+        """, (id, ))
     # Iterate the ANIMALS list, but use enumerate() so that you
     # can access the index value of each item
     for index, animal in enumerate(ANIMALS):
