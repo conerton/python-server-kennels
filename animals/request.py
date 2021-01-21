@@ -6,7 +6,7 @@ ANIMALS = [
     {
         "id": 1,
         "name": "Snickers",
-        "species": "Dog",
+        "breed": "Dog",
         "locationId": 1,
         "customerId": 4,
         "status": "Admitted"
@@ -14,7 +14,7 @@ ANIMALS = [
     {
         "id": 2,
         "name": "Gypsy",
-        "species": "Dog",
+        "breed": "Dog",
         "locationId": 1,
         "customerId": 2,
         "status": "Admitted"
@@ -22,7 +22,7 @@ ANIMALS = [
     {
         "id": 3,
         "name": "Blue",
-        "species": "Cat",
+        "breed": "Cat",
         "locationId": 2,
         "customerId": 1,
         "status": "Admitted"
@@ -159,13 +159,32 @@ def delete_animal(id):
 
 
 def update_animal(id, new_animal):
-    # Iterate the ANIMALS list, but use enumerate() so that
-    # you can access the index value of each item.
-    for index, animal in enumerate(ANIMALS):
-        if animal["id"] == id:
-            # Found the animal. Update the value.
-            ANIMALS[index] = new_animal
-            break
+    with sqlite3.connect("./kennel.db") as conn:
+        db_cursor = conn.cursor()
+
+        db_cursor.execute("""
+        UPDATE Animal
+            SET
+                name = ?,
+                breed = ?,
+                status = ?,
+                location_id = ?,
+                customer_id = ?
+        WHERE id = ?
+        """, (new_animal['name'], new_animal['breed'],
+              new_animal['status'], new_animal['location_id'],
+              new_animal['customer_id'], id, ))
+
+        # Were any rows affected?
+        # Did the client send an `id` that exists?
+        rows_affected = db_cursor.rowcount
+
+    if rows_affected == 0:
+        # Forces 404 response by main module
+        return False
+    else:
+        # Forces 204 response by main module
+        return True
 
 
 def get_animal_by_location_id(location_id):
